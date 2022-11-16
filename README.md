@@ -13,5 +13,5 @@ This folder contains the code to train the models, or to use trained models. Set
 ## src/models
 This folder contains the models for the trained adversary, baseline protagonist, protagonist model1, and protagonist model2. For details refer to the paper- Towards Physically Adversarial Intelligent Networks (PAINs) for Safer Self-Driving
 
-## scr/Performance_evaluation
+## src/Performance_evaluation
 This folder contains the code for experiments 1-4 detailed in the manuscript - Towards Physically Adversarial Intelligent Networks (PAINs) for Safer Self-Driving
