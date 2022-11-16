@@ -1941,13 +1941,12 @@ def main():
         if Q_network.use_model:
             
             for x in range(0, 1):
-                file_name = "./protagonist_model_alone/model"
+                file_name = "./models/protagonist_model_baseline/model"
                 execute_DQN(args,DQNetwork, TargetNetwork, file_name)
-                file_name = "./protagonist_model_prel/model"
+                file_name = "./models/protagonist_model1/model"
                 execute_DQN(args,DQNetwork, TargetNetwork, file_name)
-                #file_name = "./protagonist_model_adv/model"
-                #execute_DQN(args,DQNetwork, TargetNetwork, file_name)
-                file_name = "./protagonist_model_expert/model"
+
+                file_name = "./models/protagonist_model2/model"
                 execute_DQN(args,DQNetwork, TargetNetwork, file_name)
                 print("Completed experiment", x)
     except KeyboardInterrupt:

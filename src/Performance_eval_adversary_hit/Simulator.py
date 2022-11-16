@@ -1964,15 +1964,11 @@ def main():
                 os.system('sudo python Simulator_Adversary.py -protagonist _alone &')
                 execute_DQN(args,DQNetwork, TargetNetwork, file_name)
                 time.sleep(2)
-                #file_name = "./protagonist_model_prel/model"
+                #file_name = "./models/protagonist_model1/model"
                 #os.system('sudo python Simulator_Adversary.py -protagonist _pre &')
                 #execute_DQN(args,DQNetwork, TargetNetwork, file_name)
                 #time.sleep(2)
-                #file_name = "./protagonist_model_adv/model"
-                #os.system('sudo python Simulator_Adversary.py -protagonist _adv &')
-                #execute_DQN(args,DQNetwork, TargetNetwork, file_name)
-                #time.sleep(2)
-                #file_name = "./protagonist_model_expert/model"
+                #file_name = "./models/protagonist_model2/model"
                 #os.system('sudo python Simulator_Adversary.py -protagonist _expert &')
                 #execute_DQN(args,DQNetwork, TargetNetwork, file_name)
                 #time.sleep(2)

@@ -1947,13 +1947,11 @@ def main():
                 f.write("0")
                 f.close()
                 os.system('sudo python spawn_npc.py -n 5 -w 0 --safe &')
-                file_name = "./protagonist_model_alone/model"
+                file_name = "./protagonist_baseline/model"
                 execute_DQN(args,DQNetwork, TargetNetwork, file_name)
-                file_name = "./protagonist_model_prel/model"
+                file_name = "./protagonist_model1/model"
                 execute_DQN(args,DQNetwork, TargetNetwork, file_name)
-                #file_name = "./protagonist_model_adv/model"
-                #execute_DQN(args,DQNetwork, TargetNetwork, file_name)
-                file_name = "./protagonist_model_expert/model"
+                file_name = "./protagonist_model2/model"
                 execute_DQN(args,DQNetwork, TargetNetwork, file_name)
                 f = open("destroy_vehicles",'w')
                 f.write("1")
