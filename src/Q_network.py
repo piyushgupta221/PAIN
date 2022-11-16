@@ -29,43 +29,27 @@ def simplify_semantic_image(frame):
     traffic_sign_color =[220,220,0]
     roadline_color =[157,234,50]
     road_color = [128,64,128]
-    #roadline_color1 = [155,232,0]
-    #roadline_color2 = [159,236,2]
     mask1 = (frame == vegetation_color).all(axis=2)
     mask2 = (frame == traffic_sign_color).all(axis=2)
     mask3 = (frame == roadline_color).all(axis=2)    
-  #  print((frame >= roadline_color1).all() and (frame <= roadline_color2).all())
-    #mask4 = ((frame >= roadline_color1).all() and (frame <= roadline_color2).all()) #.all(axis=2) 
     simplified[mask1]=[0,0,0]
     simplified[mask2]=[0,0,0]
     simplified[mask3]=road_color
-    #simplified[mask4]=road_color
     return simplified
 
 def preprocess_frame(frame):     
-    #frame1=simplify_semantic_image(frame)
-    #plt.imshow(frame1)
-    #plt.show()
     grayscale=np.dot(frame, [0.2989, 0.5870, 0.1140])
-    #grayscale = skimage.color.rgb2gray(frame)
-    # Crop the screen (remove the roof because it contains no information)
-    #cropped_frame = frame[30:-10,30:-30]
     
     # Normalize Pixel Values
     normalized_frame = grayscale/255.0
     
     # Resize
     preprocessed_frame = transform.resize(normalized_frame, frame_size)    # Earlier [84, 84]     
-    #plot_frame = transform.resize(grayscale, frame_size) 
-    #plt.imshow(plot_frame, cmap='gray', vmin=0, vmax=255)
-    #plt.show()
     return preprocessed_frame
 
 
 
 stack_size = 4 # We stack 4 frames
-# Initialize deque with zero-images one array for each image
-#stacked_frames  =  deque([np.zeros((100,120), dtype=np.int) for i in range(stack_size)], maxlen=4) 
 
 def stack_frames(stacked_frames, state, is_new_episode):
     # Preprocess frame
@@ -87,8 +71,6 @@ def stack_frames(stacked_frames, state, is_new_episode):
     else:
         # Append frame to deque, automatically removes the oldest frame
         stacked_frames.append(frame)
-        #plt.imshow(frame, cmap='gray', vmin=0, vmax=1)
-        #plt.show()
         # Build the stacked state (first dimension specifies different frames)
         stacked_state = np.stack(stacked_frames, axis=2) 
 
@@ -157,9 +139,7 @@ class DDDQNNet:
         self.name = name
       
         
-        
-        # We use tf.variable_scope here to know which network we're using (DQN or target_net)
-        # it will be useful when we will update our w- parameters (by copy the DQN parameters)
+       
         with tf.compat.v1.variable_scope(self.name):
             
             # We create the placeholders
@@ -224,18 +204,14 @@ class DDDQNNet:
                                  name = "conv3")
 
             self.conv3_out = tf.nn.elu(self.conv3, name="conv3_out")
-            #print('Conv 3 elu dimention=',self.conv3_out.get_shape())
             
             self.flatten = tf.layers.flatten(self.conv3_out)
-            #print('Flatten dimention=',self.flatten.get_shape())
             
             self.vehicle_states = tf.layers.dense(inputs = self.vehicle_state_inputs_,
                                   units = 8,
                                   activation = tf.nn.elu,
                                   name="vehicle_states")
-            #print('vehicle_states dimention=',self.vehicle_states_inputs.get_shape())
             self.combined=tf.concat([self.flatten, self.vehicle_states],1)
-            #print('combined dimention=',self.combined.get_shape())
             ## Here we separate into two streams
             # The one that calculate V(s)
             self.value_fc = tf.layers.dense(inputs = self.combined,
@@ -264,10 +240,8 @@ class DDDQNNet:
             # Agregating layer
             # Q(s,a) = V(s) + (A(s,a) - 1/|A| * sum A(s,a'))
             self.output = self.value + tf.subtract(self.advantage, tf.reduce_mean(self.advantage, axis=1, keepdims=True))                
-            #print('self.output dimention=',self.output.get_shape())
             # Q is our predicted Q value.
             self.Q = tf.reduce_sum(tf.multiply(self.output, self.actions_), axis=1)
-            #print('self.Q dimention=',self.Q.get_shape())
             # The loss is modified because of PER 
             self.absolute_errors = tf.abs(self.target_Q - self.Q)# for updating Sumtree
             
@@ -280,12 +254,7 @@ class DDDQNNet:
 
 
 
-         
-
-"""
-This function will do the part
-With epsilon select a random action atat, otherwise select at=argmaxaQ(st,a)
-"""
+      
 def predict_action(explore_start, explore_stop, decay_rate, decay_step, state, actions, sess, DQNetwork, pid_control =None,current_control=None, pure_pid=False, vehicle_state=None, use_pid_explore=False):
     ## EPSILON GREEDY STRATEGY
     # Choose action a from state s using epsilon greedy.
@@ -325,9 +294,6 @@ def predict_action(explore_start, explore_stop, decay_rate, decay_step, state, a
 
 
 
-# This function helps us to copy one set of variables to another
-# In our case we use it when we want to copy the parameters of DQN to Target_network
-# Thanks of the very good implementation of Arthur Juliani https://github.com/awjuliani
 def update_target_graph():
     
     # Get the parameters of our DQNNetwork

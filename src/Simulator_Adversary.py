@@ -1,23 +1,5 @@
 #!/usr/bin/env python
 
-# Copyright (c) 2019 Intel Labs
-#
-# This work is licensed under the terms of the MIT license.
-# For a copy, see <https://opensource.org/licenses/MIT>.
-
-# Allows controlling a vehicle with a keyboard. For a simpler and more
-# documented example, please take a look at tutorial.py.
-
-"""
-Welcome to CARLA manual control with steering wheel Logitech G29.
-
-To drive start by preshing the brake pedal.
-Change your wheel_config.ini according to your steering wheel.
-
-To find out the values of your steering wheel use jstest-gtk in Ubuntu.
-
-"""
-
 from __future__ import print_function
 
 
@@ -95,13 +77,6 @@ import Q_network
 import pickle
 
 import Simulator
-
-
-
-
-
-
-
 
 
 
@@ -186,22 +161,6 @@ def get_actor_display_name(actor, truncate=250):
 # ==============================================================================
 
 
-'''
-
-
-self.sensors = [
-            ['sensor.camera.rgb', cc.Raw, 'Camera RGB'],
-            ['sensor.camera.depth', cc.Raw, 'Camera Depth (Raw)'],
-            ['sensor.camera.depth', cc.Depth, 'Camera Depth (Gray Scale)'],
-            ['sensor.camera.depth', cc.LogarithmicDepth, 'Camera Depth (Logarithmic Gray Scale)'],
-            ['sensor.camera.semantic_segmentation', cc.Raw, 'Camera Semantic Segmentation (Raw)'],
-            ['sensor.camera.semantic_segmentation', cc.CityScapesPalette,
-                'Camera Semantic Segmentation (CityScapes Palette)'],
-            ['sensor.lidar.ray_cast', None, 'Lidar (Ray-Cast)']]
-
-
-'''
-
 class World(object):
     def __init__(self, carla_world, hud, actor_filter, route, route_adversary):
         #settings = carla_world.get_settings()
@@ -265,21 +224,6 @@ class World(object):
                       #print("found ",x)
             
             spawn_adversary=self.adversary_initialization(protagonist_point, spawn_points)
-            #print(spawn_adversary)
-
-            #spawn_point.location.x = 12.0
-            #spawn_point.location.y = 190.0
-            #spawn_point.location.z = 2.0
-            #spawn_point.rotation.yaw = -90.0
-            #spawn_point.rotation.roll = 0.0
-            #spawn_point.rotation.pitch = 0.0
-            #self.player = self.world.spawn_actor(blueprint, spawn_adversary) 
-            #spawn_point.location.x = -85.0
-            #spawn_point.location.y = 13.0
-            #spawn_point.location.z = 10.0
-            #spawn_point.rotation.yaw = -180.0
-            #spawn_point.rotation.roll = 0.0
-            #spawn_point.rotation.pitch = 0.0
             
 
             while self.player==None:
@@ -302,14 +246,6 @@ class World(object):
         actor_type = get_actor_display_name(self.player)
         self.hud.notification(actor_type)
 
-
-    '''
-    def get_transform_adversary(self,vehicle_location, angle, d=30):
-        a = math.radians(angle)
-        location = carla.Location(d * math.cos(a), d * math.sin(a), 3.0) + vehicle_location
-        return carla.Transform(location, carla.Rotation(yaw=180+angle))
-    '''
-    
     def adversary_initialization(self, spawn_point, spawn_points):
          #dis=100
          finish=False
@@ -329,19 +265,8 @@ class World(object):
          n=60  # Initialize adversary 60 waypoints ahead of the protagonist
          adversary_point=self.Route[min(len(self.Route)-1, ix+n)]    # Not the center lane route but we don't care; Add the center route function if needed
          adversary_point.rotation.yaw=self.Route[min(len(self.Route)-1, ix+n)].rotation.yaw
-         #distance=1000
-         #prev_distance= 10000
-         #for point in spawn_points:
-         #    distance=np.linalg.norm([adversary_point.location.x - point.location.x , adversary_point.location.y-point.location.y])
-         #    if distance<prev_distance:
-         #        closest_spawn_point=point
-         #        prev_distance=distance
-         #print(distance)
-         #closest_spawn_point.rotation.yaw=self.Route[min(len(self.Route)-1, ix+100)].rotation.yaw
+         
          return adversary_point   #closest_spawn_point
-
-    #def adversary_initialization2(self, spawn_point, spawn_points):
-    #    pass
 
     def next_weather(self, reverse=False):
         self._weather_index += -1 if reverse else 1 
@@ -389,28 +314,6 @@ class DualControl(object):
         self._steer_cache = 0.0
         world.hud.notification("Press 'H' or '?' for help.", seconds=4.0)
        
-        '''
-        # initialize steering wheel
-        pygame.joystick.init()
-
-        joystick_count = pygame.joystick.get_count()
-        if joystick_count > 1:
-            raise ValueError("Please Connect Just One Joystick")
-
-        self._joystick = pygame.joystick.Joystick(0)
-        self._joystick.init()
-
-        self._parser = ConfigParser()
-        self._parser.read('wheel_config.ini')
-        self._steer_idx = int(
-            self._parser.get('G29 Racing Wheel', 'steering_wheel'))
-        self._throttle_idx = int(
-            self._parser.get('G29 Racing Wheel', 'throttle'))
-        self._brake_idx = int(self._parser.get('G29 Racing Wheel', 'brake'))
-        self._reverse_idx = int(self._parser.get('G29 Racing Wheel', 'reverse'))
-        self._handbrake_idx = int(
-            self._parser.get('G29 Racing Wheel', 'handbrake'))
-       '''
     def parse_events(self, world, clock, action=None):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -469,8 +372,6 @@ class DualControl(object):
 
         if not self._autopilot_enabled:
             if isinstance(self._control, carla.VehicleControl):
-                #self._parse_vehicle_keys(pygame.key.get_pressed(), clock.get_time())
-                #self._parse_vehicle_wheel()
                 # Major Control Edits
                 self._control=Reward.choose_control(action, self._control)
                 self._control.reverse = self._control.gear < 0
@@ -1145,41 +1046,6 @@ tree_index  0 0  0  We fill the leaves from left to right
 # ==============================================================================
 
 
-
-'''
-class Memory():
-    def __init__(self, max_size):
-        self.buffer = deque(maxlen = max_size)
-        self.explore_prob = 1
-        self.decay_step = 0
-    def add(self, experience):
-        self.buffer.append(experience)
-    
-    def sample(self, batch_size):
-        buffer_size = len(self.buffer)
-        index = np.random.choice(np.arange(buffer_size),
-                                size = batch_size,
-                                replace = False)
-        
-        return [self.buffer[i] for i in index]
-    def save(self,filename):
-        with open(filename.strip("./")+".mem", "wb") as f:
-            pickle.dump(self, f, pickle.HIGHEST_PROTOCOL)
-            f.close()
-    def load(self,filename):
-        with open(filename.strip("./")+".mem", "rb") as f:
-            dump= pickle.load(f)
-            self.explore_prob=dump.explore_prob
-            self.buffer=dump.buffer
-            self.decay_step=dump.decay_step
-            f.close()
-        
-'''
-
-
-
-
-
 class Memory(object):  # stored as ( s, a, r, s_ ) in SumTree
     """
     This SumTree code is modified version and the original code is from:
@@ -1401,8 +1267,6 @@ def game_loop(args, data_log=None, memory=None, explore_exploit_action = False, 
         if Q_network.TransferLearning and memory !=None:
             explore_probability=memory.explore_prob
             decay_step =memory.decay_step
-            #if decay_step>1:
-             #   decay_step=1000000
 
         
         current_map=WORLD.get_map()
@@ -1410,17 +1274,10 @@ def game_loop(args, data_log=None, memory=None, explore_exploit_action = False, 
         grp = GlobalRoutePlanner(dao)
         grp.setup()
 
-        #a = carla.Location(x=96.0,y=4.45,z=0)
-        #a=world.player.get_location()
-        #b = carla.Location(x=12.0, y=190, z=0)
         ROUTE = grp.trace_route(initial_point, goal_point)
         
         route=[]
         route_adversary=[]
-        #current_waypoint=ROUTE[0][0].transform.rotation.yaw
-        #next_waypoint=ROUTE[10][0].transform.rotation.yaw
-        #my_pose=world.player.get_transform().rotation.yaw
-        #print(current_waypoint, next_waypoint, my_pose)
         for g in range(len(ROUTE)-1):
             current_waypoint=ROUTE[g][0]
             route.append(current_waypoint.transform)
@@ -1524,11 +1381,6 @@ def game_loop(args, data_log=None, memory=None, explore_exploit_action = False, 
 
             world.tick(clock)
             world.render(display)
-
-            #for g in range(len(route_adversary)-1):# len(ROUTE)-1):
-            #   current_waypoint=route_adversary[g]
-            #   next_waypoint=route_adversary[g+1]
-            #   world.world.debug.draw_line(current_waypoint.location, next_waypoint.location, thickness=0.3, life_time= 2)
 
 
 
@@ -1686,15 +1538,6 @@ def game_loop(args, data_log=None, memory=None, explore_exploit_action = False, 
         if use_model:
               print('Adversary: Congratulations !!! Successfully used trained model')
               print('Adversary: Total reward: {}'.format(total_reward))
-        '''
-        if training:
-              print('Adversary: Episode: {}'.format(episode),
-                          'Total reward: {}'.format(total_reward),
-                          'Training loss: {:.4f}'.format(loss),
-                          'Explore P: {:.4f}'.format(explore_probability))
-              data_log.write('%f, %f, %f' % (total_reward, loss, explore_probability ))         
-              data_log.write('\n')
-        '''
         pygame.display.quit
         return memory, decay_step, tau, DQNetwork,TargetNetwork, writer, write_op, sess
 

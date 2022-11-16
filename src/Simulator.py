@@ -1,23 +1,5 @@
 #!/usr/bin/env python
 
-# Copyright (c) 2019 Intel Labs
-#
-# This work is licensed under the terms of the MIT license.
-# For a copy, see <https://opensource.org/licenses/MIT>.
-
-# Allows controlling a vehicle with a keyboard. For a simpler and more
-# documented example, please take a look at tutorial.py.
-
-"""
-Welcome to CARLA manual control with steering wheel Logitech G29.
-
-To drive start by preshing the brake pedal.
-Change your wheel_config.ini according to your steering wheel.
-
-To find out the values of your steering wheel use jstest-gtk in Ubuntu.
-
-"""
-
 from __future__ import print_function
 
 
@@ -187,22 +169,6 @@ def get_actor_display_name(actor, truncate=250):
 # ==============================================================================
 
 
-'''
-
-
-self.sensors = [
-            ['sensor.camera.rgb', cc.Raw, 'Camera RGB'],
-            ['sensor.camera.depth', cc.Raw, 'Camera Depth (Raw)'],
-            ['sensor.camera.depth', cc.Depth, 'Camera Depth (Gray Scale)'],
-            ['sensor.camera.depth', cc.LogarithmicDepth, 'Camera Depth (Logarithmic Gray Scale)'],
-            ['sensor.camera.semantic_segmentation', cc.Raw, 'Camera Semantic Segmentation (Raw)'],
-            ['sensor.camera.semantic_segmentation', cc.CityScapesPalette,
-                'Camera Semantic Segmentation (CityScapes Palette)'],
-            ['sensor.lidar.ray_cast', None, 'Lidar (Ray-Cast)']]
-
-
-'''
-
 class World(object):
     def __init__(self, carla_world, hud, actor_filter, route, random_initialization):
         #settings = carla_world.get_settings()
@@ -261,7 +227,6 @@ class World(object):
             spawn_point.rotation.pitch = 0.0
             self.player = self.world.try_spawn_actor(blueprint, spawn_point) 
             self.player.set_transform(init_transform)
-            #self.player = self.world.spawn_actor(blueprint, spawn_point) 
         # Set up the sensors.
         self.collision_sensor = CollisionSensor(self.player, self.hud)
         self.lane_invasion_sensor = LaneInvasionSensor(self.player, self.hud)
@@ -318,28 +283,6 @@ class DualControl(object):
         self._steer_cache = 0.0
         world.hud.notification("Press 'H' or '?' for help.", seconds=4.0)
        
-        '''
-        # initialize steering wheel
-        pygame.joystick.init()
-
-        joystick_count = pygame.joystick.get_count()
-        if joystick_count > 1:
-            raise ValueError("Please Connect Just One Joystick")
-
-        self._joystick = pygame.joystick.Joystick(0)
-        self._joystick.init()
-
-        self._parser = ConfigParser()
-        self._parser.read('wheel_config.ini')
-        self._steer_idx = int(
-            self._parser.get('G29 Racing Wheel', 'steering_wheel'))
-        self._throttle_idx = int(
-            self._parser.get('G29 Racing Wheel', 'throttle'))
-        self._brake_idx = int(self._parser.get('G29 Racing Wheel', 'brake'))
-        self._reverse_idx = int(self._parser.get('G29 Racing Wheel', 'reverse'))
-        self._handbrake_idx = int(
-            self._parser.get('G29 Racing Wheel', 'handbrake'))
-       '''
     def parse_events(self, world, clock, action=None):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -398,17 +341,12 @@ class DualControl(object):
 
         if not self._autopilot_enabled:
             if isinstance(self._control, carla.VehicleControl):
-                #self._parse_vehicle_keys(pygame.key.get_pressed(), clock.get_time())
-                #self._parse_vehicle_wheel()
                 # Major Control Edits
                 self._control=Reward.choose_control(action, self._control)
                 self._control.reverse = self._control.gear < 0
             elif isinstance(self._control, carla.WalkerControl):
                 self._parse_walker_keys(pygame.key.get_pressed(), clock.get_time())
-            #print(self._control)
             world.player.apply_control(self._control)
-            #c = world.player.get_control()
-            #print(c)
             return False
             
 
@@ -1081,60 +1019,9 @@ tree_index  0 0  0  We fill the leaves from left to right
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # ==============================================================================
 # -- Store experience in memory() ---------------------------------------------------------------
 # ==============================================================================
-
-
-
-'''
-class Memory():
-    def __init__(self, max_size):
-        self.buffer = deque(maxlen = max_size)
-        self.explore_prob = 1
-        self.decay_step = 0
-    def add(self, experience):
-        self.buffer.append(experience)
-    
-    def sample(self, batch_size):
-        buffer_size = len(self.buffer)
-        index = np.random.choice(np.arange(buffer_size),
-                                size = batch_size,
-                                replace = False)
-        
-        return [self.buffer[i] for i in index]
-    def save(self,filename):
-        with open(filename.strip("./")+".mem", "wb") as f:
-            pickle.dump(self, f, pickle.HIGHEST_PROTOCOL)
-            f.close()
-    def load(self,filename):
-        with open(filename.strip("./")+".mem", "rb") as f:
-            dump= pickle.load(f)
-            self.explore_prob=dump.explore_prob
-            self.buffer=dump.buffer
-            self.decay_step=dump.decay_step
-            f.close()
-        
-'''
-
-
-
 
 
 class Memory(object):  # stored as ( s, a, r, s_ ) in SumTree
@@ -1388,8 +1275,6 @@ def road_center(ROUTE):
                  if waypoint_left and waypoint_right:
                     break
                  #print("lane_type", left_waypoint.lane_type)
-            #print(l_waypoint.lane_id, r_waypoint.lane_id)
-            #print("One waypoint done")
             x=(l_waypoint.transform.location.x+r_waypoint.transform.location.x)/2.0
             y=(l_waypoint.transform.location.y+r_waypoint.transform.location.y)/2.0
             z=(l_waypoint.transform.location.z+r_waypoint.transform.location.z)/2.0
@@ -1397,18 +1282,8 @@ def road_center(ROUTE):
             roll=(l_waypoint.transform.rotation.roll+r_waypoint.transform.rotation.roll)/2.0
             yaw=(l_waypoint.transform.rotation.yaw +r_waypoint.transform.rotation.yaw)/2.0
             Road_center_transform=carla.Transform(carla.Location(x=x, y=y, z=z), carla.Rotation(pitch=pitch, yaw= yaw, roll=roll))
-            #print(Road_center_transform)
-            #Road_center=carla.Waypoint
-            #Road_center.transform=Road_center_transform
             center_route.append(Road_center_transform)
-            #print(Road_center_transform)
-            #print('done')
-       #print(Road_center)
        return center_route
-
-
-
-
 
 
 
@@ -1458,35 +1333,12 @@ def game_loop(args, data_log=None, memory=None, explore_exploit_action = False, 
         client = None
         client = carla.Client(args.host, args.port)
         client.set_timeout(2.0)
-        '''
-        connectCliTries = 0
-        while connectCliTries <= 5:
-            try:
-                client = carla.Client(args.host, args.port)
-                client.set_timeout(2.0)
-            except:
-                connectCliTries+=1
-        if connectCliTries >= 5:
-            print("trouble connecting to carla")
-        '''
         display = pygame.display.set_mode(
             (args.width, args.height),
             pygame.HWSURFACE | pygame.DOUBLEBUF)
 
         hud = HUD(args.width, args.height)
         WORLD = client.get_world()
-        #settings = WORLD.get_settings()
-        #settings.fixed_delta_seconds = 0.05
-        #settings.synchronous_mode = True
-        #a=WORLD.apply_settings(carla.WorldSettings(
-         #   no_rendering_mode=False,
-         #   synchronous_mode=True,
-         #   fixed_delta_seconds=0.05))
-        #print(a) 
-       #WORLD.apply_settings(settings)
-         #uncomment to change map
-       # WORLD = client.load_world('Town04')
-       # world = World(client.get_world(), hud, args.filter)
 
         if Q_network.TransferLearning and memory !=None:
                 explore_probability=memory.explore_prob
@@ -1500,30 +1352,8 @@ def game_loop(args, data_log=None, memory=None, explore_exploit_action = False, 
         grp = GlobalRoutePlanner(dao)
         grp.setup()
 
-        #a = carla.Location(x=96.0,y=4.45,z=0)
-        #a=world.player.get_location()
-        #b = carla.Location(x=12.0, y=190, z=0)
         ROUTE = grp.trace_route(initial_point, goal_point)
         ROUTE=road_center(ROUTE) 
-        #route=[]
-        #current_waypoint=ROUTE[0][0].transform.rotation.yaw
-        #next_waypoint=ROUTE[10][0].transform.rotation.yaw
-        #my_pose=world.player.get_transform().rotation.yaw
-        #print(current_waypoint, next_waypoint, my_pose)
-        #last_waypoint=ROUTE[0]
-        #route_len=0
-        
-        #for g in range(len(ROUTE)):
-         #   current_waypoint=ROUTE[g]
-            #print(current_waypoint)
-            #current_waypoint=current_waypoint.get_right_lane()   
-          #  route_len+=np.linalg.norm([last_waypoint.location.x - current_waypoint.location.x , last_waypoint.location.y-current_waypoint.location.y])
-           # route.append(current_waypoint)
-            #last_waypoint=current_waypoint
-            #print(current_waypoint.transform)
-            #next_waypoint=ROUTE[g+1][0]
-            #world.world.debug.draw_line(current_waypoint.transform.location, next_waypoint.transform.location, thickness=0.3, life_time= 0.2)
-        #print('done')
         world = World(WORLD, hud, args.filter,ROUTE, False )#not use_model)
         time.sleep(0.2)
         controller = DualControl(world, args.autopilot)
@@ -1535,16 +1365,8 @@ def game_loop(args, data_log=None, memory=None, explore_exploit_action = False, 
         all_vehicles = all_actors.filter('vehicle*') 
         protagonist = all_vehicles[0]
         
-
-
-
-        
-        #args_lateral={'K_P': 1.0, 'K_D': 0.0, 'K_I': 0.3}
-        #args_longitudinal={'K_P':1.0, 'K_D': 0.0, 'K_I': 0.1}
         args_lateral={'K_P': 1.0, 'K_D': 0.0, 'K_I': 0.3}
         args_longitudinal={'K_P':1.0, 'K_D': 1.0, 'K_I': 0.2}
-        #args_lateral={'K_P': 0.0, 'K_D': 0.0, 'K_I': 0.0}
-        #args_longitudinal={'K_P':0.0, 'K_D': 0.0, 'K_I': 0.0}
         pid_controller=VehiclePIDController(world.player, args_lateral,args_longitudinal)   # Initializing pid controller to speed up the training
         last_episode_end_time=hud.simulation_time
         clock = pygame.time.Clock()
@@ -1557,7 +1379,6 @@ def game_loop(args, data_log=None, memory=None, explore_exploit_action = False, 
         a= world.player.get_acceleration()
         con=world.player.get_control() 
         vehicle_transformation=world.player.get_transform().get_forward_vector()
-        #print(np.linalg.norm([vehicle_transformation.x,vehicle_transformation.y,vehicle_transformation.z]))
         v_long=round(abs(np.dot([vehicle_transformation.x,vehicle_transformation.y,vehicle_transformation.z], [v.x,v.y,v.z])),2)
         v_lat=round(abs(np.linalg.norm([v.x,v.y])-v_long),2)
         a_long=round(abs(np.dot([vehicle_transformation.x,vehicle_transformation.y,vehicle_transformation.z], [a.x,a.y,a.z])),2)
@@ -1593,8 +1414,6 @@ def game_loop(args, data_log=None, memory=None, explore_exploit_action = False, 
                 pid_speed_previous=pid_speed*3.6
                 #target_speed=max(min(Reward.max_velocity*3.6,pid_speed),0)*(dist_to_target)/10
                 target_speed=20
-                #print('target_speed', target_speed)
-                #print("target speed: ",target_speed,"current speed: ",3.6*math.sqrt(v.x**2 + v.y**2 + v.z**2))
                 pid = pid_controller.run_step(target_speed,target_waypoint_transform)
                 pid.throttle=0.6
                 chosen_action, explore_probability = Q_network.predict_action(Q_network.explore_start, Q_network.explore_stop, Q_network.decay_rate, decay_step, current_state, Reward.possible_actions(), sess, DQNetwork, pid,controller._control, pure_pid=pure_pid>0.85,  vehicle_state=current_state_vehicle)
@@ -1631,30 +1450,16 @@ def game_loop(args, data_log=None, memory=None, explore_exploit_action = False, 
 
             world.tick(clock)
             world.render(display)
-            #pygame.display.set_mode((100,100))
-
-            #for g in range(min(pid_index,len(ROUTE)-2),min(pid_index+3,len(ROUTE)-2)):# len(ROUTE)-1):
-            #   current_waypoint=ROUTE[g]
-            #   next_waypoint=ROUTE[g+1]
-            #   world.world.debug.draw_line(current_waypoint.location, next_waypoint.location, thickness=0.3, life_time= 2)
        
             pygame.display.flip()   
             
             Immediate_Reward=Reward.Calculate_Rewards(world, Route_length=Route_length, segment_length=segment_length ,n=num_points_on_seg)
-            #print ("\treward:", Immediate_Reward)
-           
-            #time.sleep(0.02)
             total_reward+=Immediate_Reward
             is_new_episode=False
             # Increase decay_step
             if training:
               decay_step +=1
             steps+=1
-               
-            '''
-            if steps%15==0: # and decay_step%5==0:       
-                  spectator.set_transform(get_transform(protagonist.get_location(), protagonist.get_transform().rotation.yaw, d=-20))
-            '''
 
             stuck.append([world.player.get_control().throttle,  math.sqrt(v.x**2 + v.y**2 + v.z**2)])
             throttle_commands = np.array([each[0] for each in stuck])
@@ -1678,34 +1483,11 @@ def game_loop(args, data_log=None, memory=None, explore_exploit_action = False, 
                a= world.player.get_acceleration()
                con=world.player.get_control() 
                vehicle_transformation=world.player.get_transform().get_forward_vector()
-               #print(np.linalg.norm([vehicle_transformation.x,vehicle_transformation.y,vehicle_transformation.z]))
                v_long=round(abs(np.dot([vehicle_transformation.x,vehicle_transformation.y,vehicle_transformation.z], [v.x,v.y,v.z])),2)
                v_lat=round(abs(np.linalg.norm([v.x,v.y])-v_long),2)
                a_long=round(abs(np.dot([vehicle_transformation.x,vehicle_transformation.y,vehicle_transformation.z], [a.x,a.y,a.z])),2)
                a_lat=round(abs(np.linalg.norm([a.x,a.y])-a_long),2)
-               #tran_a_v=np.dot([vehicle_transformation.x,vehicle_transformation.y,vehicle_transformation.z], [a_v.x,a_v.y,a_v.z])
-               #print('v_long',v_long, 'v_lat',v_lat)
-               #print('a',a, 'tran_a',tran_a)
-               #print('a_v',a_v, 'tran_a_v',tran_a_v)
                next_state_vehicle=np.array([v_long, v_lat,round(a_v.z,2),a_long,a_lat,round(con.throttle,2),round(con.steer,2),round(con.brake,2)])
-               #next_state_vehicle=[v.x,v.y,a_v.z,a.x,a.y,con.throttle,con.steer,con.brake]
-               #print("next_state",next_state.shape)
-               #plot_frame = transform.resize(grayscale, frame_size) 
-               '''
-               fig1=plt.figure(1)
-               plt.imshow(next_state[:,:,0], cmap='gray', vmin=0, vmax=1)
-               fig2=plt.figure(2)
-               plt.imshow(next_state[:,:,1], cmap='gray', vmin=0, vmax=1)
-               #plt.show()
-               fig3=plt.figure(3)
-               plt.imshow(next_state[:,:,2], cmap='gray', vmin=0, vmax=1)
-               #plt.show()
-               fig4=plt.figure(4)
-               plt.imshow(next_state[:,:,3], cmap='gray', vmin=0, vmax=1)
-               plt.show()
-               '''
-               #print(next_state[:,:,0].shape)
-               #print("stacked",stacked_frames.shape)
             if memory !=None and not use_model:
                  #print(current_state.shape)
                  #print("Action",chosen_action)
@@ -1741,11 +1523,6 @@ def game_loop(args, data_log=None, memory=None, explore_exploit_action = False, 
                 dones_mb = np.array([each[0][4] for each in batch])
                 current_states_vehicle_mb = np.array([each[0][5] for each in batch], ndmin=1)
                 next_states_vehicle_mb = np.array([each[0][6] for each in batch], ndmin=1)
-                #print(batch[1:5])
-                #print(actions_mb[5,:])
-                #print(rewards_mb[1:5])
-                #print(next_states_mb[5,1:3,1:3,2])
-                #print(dones_mb[1:5])
                 target_Qs_batch = []
 
                  # Get Q values for next_state 
@@ -1878,17 +1655,14 @@ def main():
     print(__doc__)
 
     try:
-        
+        '''
         # Introducing G29 Steering Force Feedback   NOT REQUIRED FOR ADVERSARIAL REINFORCEMENT LEARNING PROJECT
         device = evdev.list_devices()[0]
         evtdev = InputDevice(device)
         val = 54000 # val \in [0,65535]
         evtdev.write(ecodes.EV_FF, ecodes.FF_AUTOCENTER, val)
+        '''
 
-
-
-        #test_environment(args)
-        #game_loop(args)
 
         # Reset the graph
         tf.reset_default_graph()

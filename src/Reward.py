@@ -10,24 +10,6 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 
 ## Global variables
-'''
-max_velocity= 7.0
-max_acceleration= 4.5
-reward_velocity=2
-reward_acc=1
-stop_penalty=2
-steer_penalty=4
-goal_reward=2
-At_goal_reward=100
-cross_error_penalty=4
-brake_penalty=4
-no_throttle_penalty=1
-close_to_agent_reward=5
-
-close_enough = 5
-
-episodes=20
-'''
 
 brake_penalty=3
 max_velocity= 7.0
@@ -86,7 +68,6 @@ def choose_control(action, current_control):
     prev_brake=current_control.brake
     new_control=current_control
     step =0.1
-    #print('throttle', new_control.throttle + np.dot(action,[0, 0, 0, 0.2, 0.2, 0.2, -0.2, -0.2, -0.2]))
     new_control.throttle= round(min(max((new_control.throttle + np.dot(action,np.multiply(step,[0, 0, 0, 1, 1, 1, -1, -1, -1]))),0), 1),2)  # Calculating throttle command
     new_control.steer= round(min(max((new_control.steer + np.dot(action,np.multiply(step,[0, -1, 1, 0, -1, 1, 0, -1, 1]))),-1),1),2)  # Calculating Steering command
     if round(new_control.throttle,2)>0 or round(prev_throttle,2)>0:
@@ -94,13 +75,6 @@ def choose_control(action, current_control):
     else:
        new_control.brake= round(min(max((new_control.brake + np.dot(action,np.multiply(step,[0, 0, 0, -1, -1, -1, 1, 1, 1]))),0),1),2) # Calculating Braking Command
 
-    #if new_control.brake>0 and new_control.throttle>0:
-    #   new_control.brake=0
-    #elif new_control.brake>0       
-    #else:
-    #    new_control.throttle=0
-    #new_control.brake= min(max(-1*(new_control.throttle + np.dot(action,np.multiply(step,[0, 0, 0, 1, 1, 1, -1, -1, -1]))),0),1) # Calculating Braking Command
-    #print('new throttle=', round(new_control.throttle,2), 'new brake=', new_control.brake)
     return new_control
 
 
@@ -180,8 +154,6 @@ def Calculate_Rewards(world, Route_length, segment_length=0,n=30):
     my_acceleration= world.player.get_acceleration()
     velocity= math.sqrt(my_velocity.x**2 + my_velocity.y**2 + my_velocity.z**2)
     acceleration= math.sqrt(my_acceleration.x**2 + my_acceleration.y**2 + my_acceleration.z**2)
-    #road_heading=closest_waypoint.transform.location-my_location
-    #mag_road_direction=np.linalg.norm([road_heading.x, road_heading.y, road_heading.z])
     road_heading = closest_waypoint.rotation.yaw
     cos_alpha=math.cos((road_heading-world.player.get_transform().rotation.yaw)*math.pi/180)#(road_heading.x*my_velocity.x + road_heading.y*my_velocity.y + road_heading.z*my_velocity.z)/(mag_road_direction*velocity)
    # print(cos_alpha)
@@ -198,62 +170,8 @@ def Calculate_Rewards(world, Route_length, segment_length=0,n=30):
     #print('brake',brake)
     Imediate_Reward= round(reward_velocity*(velocity/maximum_velocity)*(cos_alpha-abs(sin_alpha))*(velocity <= maximum_velocity) -reward_acc*(acceleration> max_acceleration)- stop_penalty*(velocity<=1) -steer_penalty*steering**2 + collision_reward + goal_reward*(1-goal_dis/Route_length)
                                                  + At_goal_reward*(goal_dis<close_enough) -cross_error_penalty*(cross_track_error**2/40)*(abs(cross_track_error)>2) - round(brake_penalty*abs(brake),2),2)# Use this for penalizing lateral velocity
-    #Imediate_Reward= reward_par1*velocity*(abs(cos_alpha) - abs(sin_alpha) )*(velocity <= max_velocity) -reward_par2*(acceleration> max_acceleration)- penalty_1*(velocity<=4) -steer_1*steering**2 + collision_reward +   1000/max(1,goal_dis) +10000*(goal_dis<close_enough) # Use this for penalizing lateral velocity
-    #Imediate_Reward= reward_par1*velocity*(abs(cos_alpha) )*(velocity <= max_velocity) -reward_par2*(acceleration> max_acceleration) - penalty_1*(velocity<=1) -steer_1*steering**2
-    return Imediate_Reward
 
-'''
-def Calculate_Rewards(world, Route_length,segment_length,n=30):
-    my_location= world.player.get_location()
-    current_map=world.world.get_map()
-    closest_waypoint, closest_ix= closestRoutePoint(world)#current_map.get_waypoint(my_location, project_to_road=True, lane_type=carla.LaneType.Driving)
-    cross_track_error=np.linalg.norm([my_location.x - closest_waypoint.location.x , my_location.y-closest_waypoint.location.y])
-    #print(cross_track_error)
-    my_velocity= world.player.get_velocity()
-    #my_angular_velocity= world.player.get_angular_velocity()
-    my_acceleration= world.player.get_acceleration()
-    velocity= math.sqrt(my_velocity.x**2 + my_velocity.y**2 + my_velocity.z**2)
-    acceleration= math.sqrt(my_acceleration.x**2 + my_acceleration.y**2 + my_acceleration.z**2)
-    #road_heading=closest_waypoint.transform.location-my_location
-    #mag_road_direction=np.linalg.norm([road_heading.x, road_heading.y, road_heading.z])
-    road_heading = closest_waypoint.rotation.yaw
-    cos_alpha=math.cos((road_heading-world.player.get_transform().rotation.yaw)*math.pi/180)#(road_heading.x*my_velocity.x + road_heading.y*my_velocity.y + road_heading.z*my_velocity.z)/(mag_road_direction*velocity)
-   # print(cos_alpha)
-    sin_alpha=math.sqrt(1-cos_alpha**2)
-    collide=world.collision_sensor.actor_collision_list
-    collision_reward=0
-    if len(collide)>0:
-        collision_reward=-50
-    steering=world.player.get_control().steer
-    brake=world.player.get_control().brake
-    throttle=world.player.get_control().throttle
-    goal_dis=dis_to_goal(world)
-    
-    #if closest_ix > len(world.Route)-n:
-    #    goal_dis=dis_to_goal(world)
-    #else: 
-    #    goal_dis = close_enough+1
-    
-    sub_goal_dis=dis_to_subgoal(world,n=n)
-    #print("Route len:",Route_length)
-    #Imediate_Reward= round(reward_velocity*(velocity/max_velocity)*(velocity <= max_velocity) -reward_acc*(acceleration> max_acceleration)- stop_penalty*(velocity<=3) -steer_penalty*steering**2 + collision_reward -cross_error_penalty*(cross_track_error**2/40) + goal_reward*(1-sub_goal_dis/segment_length) + At_goal_reward*(goal_dis<close_enough),2 )
-    R_vel=round(reward_velocity*(velocity/max_velocity)*(cos_alpha-abs(sin_alpha))*(velocity <= max_velocity)-1*(velocity > max_velocity)*(velocity/max_velocity-1),2)
-    R_acc=round(reward_acc*(acceleration> max_acceleration),2)
-    R_stop=round(stop_penalty*(velocity<=3),2)*round(1+ brake_penalty*abs(brake) + no_throttle_penalty*(throttle==0),2)
-    R_steer=round(steer_penalty*steering**2,2)
-    R_collision=collision_reward
-    R_cross= round(cross_error_penalty*(cross_track_error**2/40),2)
-    #R_brake= round(brake_penalty*abs(brake),2)
-    #R_sub_goal=round(goal_reward*(1-sub_goal_dis/segment_length),2)
-    R_dis_goal=round(goal_reward*(1-goal_dis/Route_length),2)
-    R_goal=round(At_goal_reward*(goal_dis<close_enough),2)
-    Imediate_Reward=  R_vel- R_acc- R_stop - R_steer + R_collision - R_cross + R_goal# - R_brake  R_dis_goal
-    #print(Imediate_Reward)
-    #print(R_stop)
-    #Imediate_Reward= reward_par1*velocity*(abs(cos_alpha) - abs(sin_alpha) )*(velocity <= max_velocity) -reward_par2*(acceleration> max_acceleration)- penalty_1*(velocity<=4) -steer_1*steering**2 + collision_reward +   1000/max(1,goal_dis) +10000*(goal_dis<close_enough) # Use this for penalizing lateral velocity
-    #Imediate_Reward= reward_par1*velocity*(abs(cos_alpha) )*(velocity <= max_velocity) -reward_par2*(acceleration> max_acceleration) - penalty_1*(velocity<=1) -steer_1*steering**2
     return Imediate_Reward
-'''
 
 def dis_to_goal(world):
     closest_waypoint, ix= closestRoutePoint(world)
@@ -280,15 +198,6 @@ def dis_to_subgoal(world,n=30):
     closest_waypoint, ix= closestRoutePoint(world)
     sub_goal_ix=min(int(n*math.floor((ix+1)/n)+n),len(world.Route))
     dis_sub_goal=2.0*(sub_goal_ix-ix)+np.linalg.norm([world.Route[ix+1].location.x - world.Route[ix].location.x , world.Route[ix+1].location.y-world.Route[ix].location.y])
-    #print("sub goal dist approx, ix:",2.0*(sub_goal_ix-ix)+np.linalg.norm([world.Route[ix+1].location.x - world.Route[ix].location.x , world.Route[ix+1].location.y-world.Route[ix].location.y]))
-    #print(ix)
-    '''dis_sub_goal=0
-    while ix<sub_goal_ix-1:
-        dis = np.linalg.norm([world.Route[ix+1].location.x - world.Route[ix].location.x , world.Route[ix+1].location.y-world.Route[ix].location.y])
-        dis_sub_goal=dis_sub_goal+dis
-        ix=ix+1'''
-    #print("sub goal dist, ix:",dis_sub_goal,sub_goal_ix)
-    #print("approx. Route len:",22*dis_sub_goal)
     return dis_sub_goal
 
 def initial_dis_to_goal(world):
