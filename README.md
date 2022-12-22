@@ -20,6 +20,8 @@ This folder contains the code for experiments 1-4 detailed in the manuscript - T
 
 If you use or refer to PAIN in a scientific publication, we would appreciate using the following citation to our [paper](https://ieeexplore.ieee.org/abstract/document/9991836):
 
+P. Gupta, D. Coleman and J. E. Siegel, "Towards Physically Adversarial Intelligent Networks (PAINs) for Safer Self-Driving," in IEEE Control Systems Letters, doi: 10.1109/LCSYS.2022.3230085.
+
 ```
 @ARTICLE{9991836,
   author={Gupta, Piyush and Coleman, Demetris and Siegel, Joshua E.},
