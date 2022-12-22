@@ -18,7 +18,7 @@ This folder contains the code for experiments 1-4 detailed in the manuscript - T
 
 ## BibTeX Citation
 
-If you use or refer to PAIN in a scientific publication, we would appreciate using the following citations:
+If you use or refer to PAIN in a scientific publication, we would appreciate using the following citation to our paper https://ieeexplore.ieee.org/abstract/document/9991836:
 
 ```
 @ARTICLE{9991836,
