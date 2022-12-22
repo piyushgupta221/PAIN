@@ -16,4 +16,15 @@ This folder contains the models for the trained adversary, baseline protagonist,
 ## src/Performance_evaluation
 This folder contains the code for experiments 1-4 detailed in the manuscript - Towards Physically Adversarial Intelligent Networks (PAINs) for Safer Self-Driving
 
-# Citation
+## Citation
+If you publish work that uses or refers to PAIN, please cite the following paper:
+
+@article{liang2021ncvx,
+    title={{NCVX}: {A} User-Friendly and Scalable Package for Nonconvex 
+    Optimization in Machine Learning}, 
+    author={Buyun Liang, Tim Mitchell, and Ju Sun},
+    year={2021},
+    eprint={2111.13984},
+    archivePrefix={arXiv},
+    primaryClass={cs.LG}
+}
