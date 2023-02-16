@@ -27,9 +27,10 @@ P. Gupta, D. Coleman and J. E. Siegel, "Towards Physically Adversarial Intellige
   author={Gupta, Piyush and Coleman, Demetris and Siegel, Joshua E.},
   journal={IEEE Control Systems Letters}, 
   title={Towards Physically Adversarial Intelligent Networks (PAINs) for Safer Self-Driving}, 
-  year={2022},
-  volume={},
+  year={2023},
+  volume={7},
   number={},
-  pages={1-1},
+  pages={1063-1068},
   doi={10.1109/LCSYS.2022.3230085}}
+
 ```
